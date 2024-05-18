@@ -1,0 +1,11 @@
+#opentele
+#telethon
+coloredlogs
+httpx
+pendulum
+playwright
+temporalio
+getuseragent
+numpy
+requests
+random-username
