@@ -27,6 +27,8 @@ class TelegramClickerTemplate:
     # СЮДА ВСТАВЛЯТЬ КОД
 
     async def load_state(self, page: Page) -> None:
+        await page.get_by_text("Earn").click() # Переходим на вкладку Earn
+        await asyncio.sleep(2) # подождать пока прогрузится баланс
         await self.load_money_current_balance(page)
         await self.load_vault_current_capacity(page)
         await self.load_vault_current_filled_percent(page)
@@ -114,9 +116,14 @@ class TelegramClickerTemplate:
         paper_pack_offer_index = 0 # Порядковый номер оффера который хотим купить. По умолчанию покупаем первый (самый дешевый) пакет
 
         for index, paper_pack_offer in enumerate(self.paper_available_pack_offers):  # Выбираем подходящий оффер
-            print(f"index: {index}; current_balance: {self.money_current_balance}; pack_cost: {self.paper_available_pack_offers[index]}")
-            if (self.money_current_balance < paper_pack_offer["price"]):
+            # print(f"index: {index}; current_balance: {self.money_current_balance}; pack_cost: {self.paper_available_pack_offers[index]}")
+            if (
+                self.money_current_balance < paper_pack_offer["price"]
+                or (self.paper_current_balance + paper_pack_offer["price"] > self.paper_current_limit)
+            ):
                 paper_pack_offer_index = index - 1
+                print(f"self.money_current_balance: {self.money_current_balance} < {paper_pack_offer["price"]} paper_pack_offer[price]")
+                print(f"if! break {paper_pack_offer_index}")
                 break
 
         await page.get_by_text("Earn").click() # Переходим на вкладку Earn
@@ -125,30 +132,35 @@ class TelegramClickerTemplate:
         available_paper_pack_offer_locators = await page.locator('[class*="_paper_item"]').all() # Загружаем локаторы офферов
         
         paper_pack_offer_to_buy: Locator = available_paper_pack_offer_locators[paper_pack_offer_index] # Выбираем нужный оффер
-        paper_pack_offer_to_buy.click() # покупаем нужный оффер
+        paper_pack_offer_to_buy_text = await paper_pack_offer_to_buy.text_content() # Сохраняем текст оффера в переменную
+        await paper_pack_offer_to_buy.click() # кликаем на выбранный оффер для его покупки
+        await asyncio.sleep(2) # TODO: REMOVE
+        await page.get_by_text("Confirm").click() # подтверждаем покупку оффера
 
-        print(f"[brrrrr]: bought paper pack: {await paper_pack_offer_to_buy.text_content()}")
+        print(f"[brrrrr]: bought paper pack: {paper_pack_offer_to_buy_text}")
 
     async def handler_game(self, page: Page, params: dict, logger: logging.Logger):
         await page.goto(params["url"], timeout=60000)
 
-        await asyncio.sleep(5) # подождать пока прогрузится баланс
+        # try: await page.get_by_role("button", name="START PRINTING").click()
+        # except TimeoutError: pass
+
         self.time_start = time.time()
 
-        await self.load_state(page)
-        await self.action_buy_paper(page)
-
-        # while (True):
-        #     await self.load_state(page)
-        #     if (self.vault_is_full):
-        #         await self.game_buy_paper(page)
-        #     else:
-        #         break
-
-        try:
-            await page.get_by_role("button", name="START PRINTING").click()
-        except TimeoutError:
-            pass
+        while (True):
+            await self.load_state(page)
+            if (self.paper_is_empty):
+                print("[brrrrr]: paper is empty!")
+                await self.action_buy_paper(page)
+            elif (self.vault_is_full):
+                print("[brrrrr]: vault is full!")
+                # await self.action_buy_boost_vault_capacity(page)
+                # await self.action_buy_boost_paper_capacity(page)
+                # await self.action_buy_boost_better_printer(page)
+                # await self.action_buy_boost_better_printing_speed(page)
+                await self.action_buy_paper(page)
+            else:
+                continue
 
     # И ТОЛЬКО СЮДА  ^^^
 
