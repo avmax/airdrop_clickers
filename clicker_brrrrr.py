@@ -133,7 +133,7 @@ class TelegramClickerTemplate:
         await page.get_by_text("Boosts").click() # Переходим на вкладку Boosts
         await asyncio.sleep(1) # Ждем пока прогрузится страница
         booster_available_locators = await page.locator('[class*="_booster_item"]').all()
-        await booster_available_locators[1].click() # Кликаем на бустер про увеличение размера сейфа(он 2ой в списке (1ый в массиве))
+        await booster_available_locators[1].click() # Кликаем на бустер про увеличение размера сейфа (он 2ой в списке (1ый в массиве))
         await asyncio.sleep(1) # Ждем пока откроется модалка
         await page.locator('[class*="_info_btn"]').click() # кликаем на модалку с подтверждением намерения
         await asyncio.sleep(1) # Ждем пока прогрузится следующая модалка
@@ -142,15 +142,43 @@ class TelegramClickerTemplate:
 
     async def action_buy_booster_improve_paper_storage_capacity(self, page: Page) -> None:
         print("[brrrrr]: action buy booster: improve paper storage capacity!")
-        #TODO: прописать логику покупки бустера
+        await page.get_by_text("Boosts").click() # Переходим на вкладку Boosts
+        await asyncio.sleep(1) # Ждем пока прогрузится страница
+        booster_available_locators = await page.locator('[class*="_booster_item"]').all()
+        await booster_available_locators[2].click() # Кликаем на бустер про увеличение paper capacity (он 3ий в списке (2ой в массиве))
+        await asyncio.sleep(1) # Ждем пока откроется модалка
+        await page.locator('[class*="_info_btn"]').click() # кликаем на модалку с подтверждением намерения
+        await asyncio.sleep(1) # Ждем пока прогрузится следующая модалка
+        await page.locator('[class*="_info_btn"]').click() # Закрываем появившиюся модалку (какая бы она ни была)
+        await page.get_by_text("Earn").click() # Возвращаемся на главную вкладку (Earn)
 
     async def action_buy_booster_improve_printer(self, page: Page) -> None:
         print("[brrrrr]: action buy booster: improve printer!")
-        #TODO: прописать логику покупки бустера
+        await page.get_by_text("Boosts").click() # Переходим на вкладку Boosts
+        await asyncio.sleep(1) # Ждем пока прогрузится страница
+        booster_available_locators = await page.locator('[class*="_booster_item"]').all()
+        await booster_available_locators[3].click() # Кликаем на бустер про улучшение принтера (он 4ий в списке (3ий в массиве))
+        await asyncio.sleep(1) # Ждем пока откроется модалка
+        await page.locator('[class*="_info_btn"]').click() # кликаем на модалку в которой нас предупреждают о том, что сбросятся улучшения скорости печати
+        await asyncio.sleep(1) # Ждем пока откроется модалка
+        await page.locator('[class*="_info_btn"]').click() # кликаем на модалку с подтверждением намерения
+        await asyncio.sleep(1) # Ждем пока прогрузится следующая модалка
+        await page.locator('[class*="_info_btn"]').click() # Закрываем появившиюся модалку (какая бы она ни была)
+        await page.get_by_text("Earn").click() # Возвращаемся на главную вкладку (Earn)
 
     async def action_buy_booster_improve_printing_speed(self, page: Page) -> None:
         print("[brrrrr]: action buy booster: improve printing speed!")
-        #TODO: прописать логику покупки бустера
+        await page.get_by_text("Boosts").click() # Переходим на вкладку Boosts
+        await asyncio.sleep(1) # Ждем пока прогрузится страница
+        booster_available_locators = await page.locator('[class*="_booster_item"]').all()
+        await booster_available_locators[0].click() # Кликаем на бустер про улучшение принтера (он 1ый в списке (0ой в массиве))
+        await asyncio.sleep(1) # Ждем пока откроется модалка
+        await page.locator('[class*="_info_btn"]').click() # кликаем на модалку в которой нас предупреждают о том, что при покупке нового принтера это улучшение сбросится
+        await asyncio.sleep(1) # Ждем пока откроется модалка
+        await page.locator('[class*="_info_btn"]').click() # кликаем на модалку с подтверждением намерения
+        await asyncio.sleep(1) # Ждем пока прогрузится следующая модалка
+        await page.locator('[class*="_info_btn"]').click() # Закрываем появившиюся модалку (какая бы она ни была)
+        await page.get_by_text("Earn").click() # Возвращаемся на главную вкладку (Earn)
 
     async def handler_game(self, page: Page, params: dict, logger: logging.Logger):
         await page.goto(params["url"], timeout=60000)
@@ -158,23 +186,37 @@ class TelegramClickerTemplate:
         try: await page.get_by_role("button", name="START PRINTING").click()
         except TimeoutError: pass
 
-        self.time_start = time.time()
+        # self.time_start = time.time()
 
-        while (True):
-            await self.load_state(page)
-            if (self.paper_is_empty):
-                print("[brrrrr]: paper is empty!")
-                await self.action_buy_paper(page) # если бумага кончилась — закупаем бумагу
-            elif (self.vault_is_full):
-                print("[brrrrr]: vault is full!")
-                await self.action_buy_paper(page) # если сейф переполнился — закупаем бумагу (тем самым опустошаем сейф)
-                await self.action_buy_booster_improve_vault_capacity(page) # если сейф заполнился — попробовать купить бустер на увеличение сейфа
-                # await self.action_buy_boost_paper_capacity(page) #TODO: если деньги остались — попробовать купить бустер на увеличение лотка с бумагой
-                # await self.action_buy_booster_improve_printer(page) #TODO: если деньги остались — попробовать купить бустер на повышение эффективности принтера
-                # await self.action_buy_booster_improve_printing_speed(page) #TODO: если деньги остались — попробовать купить бустер на повышение скорости печати
-                await self.action_buy_paper(page) # если остались деньги — пробуем докупить еще бумаги
-            else:
-                continue
+        await self.load_state(page)
+
+        if (self.paper_is_empty):
+            print("[brrrrr]: paper is empty!")
+            await self.action_buy_paper(page) # если бумага кончилась — закупаем бумагу
+        elif (self.vault_is_full):
+            print("[brrrrr]: vault is full!")
+            await self.action_buy_paper(page) # если сейф переполнился — закупаем бумагу (тем самым опустошаем сейф)
+            await self.action_buy_booster_improve_vault_capacity(page) # если деньги остались — пробуем купить бустер на увеличение сейфа
+            await self.action_buy_booster_improve_paper_storage_capacity(page) #если деньги остались — пробуем купить бустер на увеличение лотка с бумагой
+            await self.action_buy_booster_improve_printer(page) # если деньги остались — попробовать купить бустер на повышение эффективности принтера
+            await self.action_buy_booster_improve_printing_speed(page) # если деньги остались — попробовать купить бустер на повышение скорости печати
+            await self.action_buy_paper(page) # если остались деньги — пробуем докупить еще бумаги
+
+        # while (True):
+        #     await self.load_state(page)
+        #     if (self.paper_is_empty):
+        #         print("[brrrrr]: paper is empty!")
+        #         await self.action_buy_paper(page) # если бумага кончилась — закупаем бумагу
+        #     elif (self.vault_is_full):
+        #         print("[brrrrr]: vault is full!")
+        #         await self.action_buy_paper(page) # если сейф переполнился — закупаем бумагу (тем самым опустошаем сейф)
+        #         await self.action_buy_booster_improve_vault_capacity(page) # если деньги остались — пробуем купить бустер на увеличение сейфа
+        #         await self.action_buy_booster_improve_paper_storage_capacity(page) #если деньги остались — пробуем купить бустер на увеличение лотка с бумагой
+        #         await self.action_buy_booster_improve_printer(page) # если деньги остались — попробовать купить бустер на повышение эффективности принтера
+        #         await self.action_buy_booster_improve_printing_speed(page) # если деньги остались — попробовать купить бустер на повышение скорости печати
+        #         await self.action_buy_paper(page) # если остались деньги — пробуем докупить еще бумаги
+        #     else:
+        #         continue
 
     # И ТОЛЬКО СЮДА  ^^^
 
