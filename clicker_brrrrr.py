@@ -21,12 +21,13 @@ class TelegramClickerTemplate:
     def __init__(self) -> None:
         self.loop = asyncio.get_event_loop()
 
-    def provide_ref_url(self, project: str, ref_url: str) -> None:
+    def provide_ref_url(self, project: str, ref_url: str, user_id = -1) -> None:
         print(f"provide_ref_url:{project}:{ref_url}")
 
     # КОД КЛИКЕРА (ПИШЕМ КОД НИЖЕ ЭТОЙ СТРОКИ)
 
     async def load_state(self, page: Page) -> None:
+        await self.load_ref_url(page)
         await page.get_by_text("Earn").click() # Переходим на вкладку Earn
         await asyncio.sleep(2) # Ждем пока прогрузится страница
         await self.load_money_current_balance(page)
@@ -36,6 +37,16 @@ class TelegramClickerTemplate:
         await self.load_paper_is_empty(page)
         await self.load_paper_current_limit(page)
         await self.load_paper_available_pack_offers(page)
+
+    async def load_ref_url(self, page: Page) -> str:
+        await page.get_by_text("Friends").click() # Переходим на вкладку Friends
+        await asyncio.sleep(1) # Ждем пока прогрузится страница
+        await page.locator("button", has_text="Copy").click() # Кликаем на кнопку copy ref url
+        self.ref_url = await page.evaluate("navigator.clipboard.readText()")
+        await page.locator("button", has_text="Ok").click() # Закрываем появившиюся модалку (какая бы она ни была)
+        await page.get_by_text("Earn").click() # Возвращаемся на вкладку Earn
+        self.provide_ref_url("brrrrr", self.ref_url)
+        return self.ref_url
 
     async def load_money_current_balance(self, page: Page) -> float:
         await page.get_by_text("Earn").click() # Переходим на вкладку Earn
@@ -109,8 +120,6 @@ class TelegramClickerTemplate:
                 or (self.paper_current_balance + paper_pack_offer["price"] > self.paper_current_limit)
             ):
                 paper_pack_offer_index = max(0, index - 1)
-                print(f"self.money_current_balance: {self.money_current_balance} < {paper_pack_offer["price"]} paper_pack_offer[price]")
-                print(f"if! break {paper_pack_offer_index}")
                 break
 
         await page.get_by_text("Earn").click() # Переходим на вкладку Earn

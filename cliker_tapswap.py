@@ -19,7 +19,7 @@ class TelegramClickerTemplate:
     def __init__(self) -> None:
         self.loop = asyncio.get_event_loop()
 
-    def provide_ref_url(self, project: str, ref_url: str, user_id = -1) -> None:
+    def provide_ref_url(self, project: str, ref_url: str) -> None:
         print(f"provide_ref_url:{project}:{ref_url}")
 
     # СЮДА ВСТАВЛЯТЬ КОД
